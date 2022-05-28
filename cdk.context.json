@@ -1,0 +1,15 @@
+{
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/dev/discord-application-id:region=us-east-1": "937478282692161596",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/dev/emojify-endpoint:region=us-east-1": "https://emojify.hamologist.com/emojify",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/dev/roll-endpoint:region=us-east-1": "https://dice-roll.hamologist.com/roll",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/dev/discord-public-key:region=us-east-1": "447a7195355c4aff0371d7504efcc726cfed6ce023e221c97bd8b08d93fb64eb",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/prod/discord-application-id:region=us-east-1": "937192453172256848",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/prod/emojify-endpoint:region=us-east-1": "https://emojify.hamologist.com/emojify",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/prod/roll-endpoint:region=us-east-1": "https://dice-roll.hamologist.com/roll",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/prod/discord-public-key:region=us-east-1": "a22e1e9d6385c199671a56407cef0991cc1694d6fe09171d53b83599a2729486",
+  "ssm:account=770225659331:parameterName=/discord-slash-command-processor/prod/root-domain:region=us-east-1": "hamologist.com",
+  "hosted-zone:account=770225659331:domainName=hamologist.com:region=us-east-1": {
+    "Id": "/hostedzone/ZWQ5Z57L1P3QS",
+    "Name": "hamologist.com."
+  }
+}

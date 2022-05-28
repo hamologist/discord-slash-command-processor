@@ -1,0 +1,13 @@
+{
+  "name": "command-router",
+  "version": "0.1.0",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.100.0",
+    "axios": "^0.27.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.97",
+    "@types/node": "^17.0.35"
+  }
+}
