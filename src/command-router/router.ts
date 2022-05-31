@@ -1,42 +1,34 @@
-import axios from 'axios';
+import { InvocationType, InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { TextEncoder } from 'util';
 import { VerifiedInteraction } from './types/interaction';
-import processors from './processor';
 
-export interface ResponseData {
-    content: string,
-    flags?: number,
+const client = new LambdaClient({});
+const diceRollHandlerArn = process.env.DICE_ROLL_DISCORD_HANDLER_ARN;
+const emojifyHandlerArn = process.env.EMOJIFY_DISCORD_HANDLER_ARN;
+
+if (!diceRollHandlerArn) {
+    console.log('Missing Environment Variable: DICE_ROLL_DISCORD_HANDLER_ARN');
+    throw new Error('Server not properly configured');
 }
 
-export const handler = async (
-    body: VerifiedInteraction
-): Promise<void> => {
-    let responseData: ResponseData
-
-    const discordApplicationId = process.env.DISCORD_APPLICATION_ID;
-    if (!discordApplicationId) {
-        console.log('Missing Environment Variable: DISCORD_APPLICATION_ID');
-        throw new Error('Server not properly configured');
-    }
-
-    const processor = processors[body.data.name];
-    if (processor !== undefined) {
-        responseData = await processor(body.data.options[0].value);
-    } else {
-        responseData = { content: 'Unknown slash command', flags: 1<<6 }
-    }
-
-    if (!responseData.flags) {
-        await axios.patch(
-            `https://discord.com/api/v8/webhooks/${discordApplicationId}/${body.token}/messages/@original`,
-            { content: responseData.content }
-        );
-    } else {
-        await axios.delete(
-            `https://discord.com/api/v8/webhooks/${discordApplicationId}/${body.token}/messages/@original`
-        );
-        await axios.post(
-            `https://discord.com/api/v8/webhooks/${discordApplicationId}/${body.token}`,
-            responseData
-        )
-    }
+if (!emojifyHandlerArn) {
+    console.log('Missing Environment Variable: EMOJIFY_DISCORD_HANDLER_ARN');
+    throw new Error('Server not properly configured');
 }
+
+const buildInvoke = (handlerArn: string) => async (body: VerifiedInteraction) => {
+    await client.send(new InvokeCommand({
+        FunctionName: handlerArn,
+        InvocationType: InvocationType.Event,
+        Payload: new TextEncoder().encode(JSON.stringify(body)),
+    }));
+}
+
+const router: {
+    [key: string]: ReturnType<typeof buildInvoke>
+} = {
+    'roll': buildInvoke(diceRollHandlerArn),
+    'emojify': buildInvoke(emojifyHandlerArn),
+}
+
+export default router;

@@ -11,10 +11,15 @@ export class ProdStack extends Stack {
 
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
+
+        const diceRollDiscordHandlerArn = ssm.StringParameter.valueForStringParameter(this, '/dice-roll/prod/discord-handler-arn');
+        const emojifyDiscordHandlerArn = ssm.StringParameter.valueForStringParameter(this, '/emojify/prod/discord-handler-arn');
         this.discordSlashCommandProcessor = new DiscordSlashCommandProcessor(this,
             'DiscordSlashCommandProcessor',
             {
                 scope: 'prod',
+                diceRollDiscordHandlerArn,
+                emojifyDiscordHandlerArn,
             }
         );
         const rootDomain = ssm.StringParameter.valueFromLookup(

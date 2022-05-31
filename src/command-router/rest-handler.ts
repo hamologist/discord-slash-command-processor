@@ -1,8 +1,15 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { sign } from 'tweetnacl';
-import { UnverifiedInteraction } from './types/interaction';
-import { InvocationType, InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { TextEncoder } from 'util';
+import { isVerifiedInteraction, UnverifiedInteraction } from './types/interaction';
+import router from './router';
+
+const buildErrorResponse = (message: string) => ({
+    type: 4,
+        data: {
+        content: message,
+            flags: 1<<6,
+    }
+});
 
 export const handler = async (
     event: APIGatewayProxyEvent
@@ -52,31 +59,28 @@ export const handler = async (
         }
     }
 
-    if (body.data === undefined) {
+    const discordApplicationId = process.env.DISCORD_APPLICATION_ID;
+    if (!discordApplicationId) {
+        console.log('Missing Environment Variable: DISCORD_APPLICATION_ID');
+        throw new Error('Server not properly configured');
+    }
+    body.applicationId = discordApplicationId;
+
+    if (!isVerifiedInteraction(body)) {
         return {
             statusCode: 200,
-            body: JSON.stringify({
-                type: 4,
-                data: {
-                    content: 'Something went wrong.',
-                    flags: 1<<6,
-                }
-            })
+            body: JSON.stringify(buildErrorResponse('Something went wrong.')),
         }
     }
 
-    const commandRouterFunctionName = process.env.COMMAND_ROUTER_FUNCTION_NAME;
-    if (!commandRouterFunctionName) {
-        console.log('Missing Environment Variable: COMMAND_ROUTER_FUNCTION_NAME');
-        throw new Error('Server not properly configured');
+    const invoke = router[body.data.name];
+    if (invoke === undefined) {
+        return {
+            statusCode: 200,
+            body: JSON.stringify(buildErrorResponse('Unsupported command name provided')),
+        }
     }
-
-    const client = new LambdaClient({});
-    await client.send(new InvokeCommand({
-        FunctionName: commandRouterFunctionName,
-        InvocationType: InvocationType.Event,
-        Payload: new TextEncoder().encode(JSON.stringify(body)),
-    }));
+    await invoke(body);
 
     return {
         statusCode: 200,
